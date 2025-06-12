@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { CreateTodoDto } from './dto/create-todo.dto';
+import { UpdateTodoDto } from './dto/update-todo.dto';
 
 export interface Todo {
   id: number;
   title: string;
-  description: string;
+  description?: string;
   completed: boolean;
   priority?: 'low' | 'medium' | 'high';
   createdAt?: Date;
@@ -14,15 +16,18 @@ export interface Todo {
 @Injectable()
 export class TodoService {
   private todos: Todo[] = [];
+  private nextId = 1; // Add this counter
 
-  create(todo: { title: string; description?: string }) {
+  create(createTodoDto: CreateTodoDto) {
     const newTodo: Todo = {
-      id: this.todos.length + 1,
-      title: todo.title,
-      description: todo.description || '',
+      id: this.nextId++,
+      title: createTodoDto.title || '',
+      description: createTodoDto.description || '',
       completed: false,
       createdAt: new Date(),
       updatedAt: new Date(),
+
+      priority: createTodoDto.priority as 'low' | 'medium' | 'high',
     };
     this.todos.push(newTodo);
     return newTodo;
@@ -37,10 +42,10 @@ export class TodoService {
     return todo;
   }
 
-  updateTodo(id: number, updatedTodo: { title: string; description?: string }) {
+  updateTodo(id: number, updateTodoDto: UpdateTodoDto) {
     this.todos = this.todos.map((todo) => {
       if (todo.id === id) {
-        return { ...todo, ...updatedTodo };
+        return { ...todo, ...updateTodoDto };
       }
       return todo;
     });
@@ -51,5 +56,13 @@ export class TodoService {
     const removeTodo = this.findOneTodo(id);
     this.todos = this.todos.filter((todo) => todo.id !== id);
     return removeTodo;
+  }
+
+  markComplete(id: number) {
+    return this.updateTodo(id, { completed: true });
+  }
+
+  markIncomplete(id: number) {
+    return this.updateTodo(id, { completed: false });
   }
 }
