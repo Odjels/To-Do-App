@@ -8,6 +8,7 @@ import {
   Body,
   Query,
   ParseIntPipe,
+  ValidationPipe,
 } from '@nestjs/common';
 import { TodoService } from './todo.service';
 import { CreateTodoDto } from './dto/create-todo.dto';
@@ -41,7 +42,7 @@ export class TodoController {
   ];
 
   @Post()
-  create(@Body() createTodoDto: CreateTodoDto) {
+  create(@Body(ValidationPipe) createTodoDto: CreateTodoDto) {
     return this.todoService.create(createTodoDto);
   }
 
@@ -67,7 +68,7 @@ export class TodoController {
   @Patch(':id')
   updateTodo(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateTodoDto: UpdateTodoDto,
+    @Body(ValidationPipe) updateTodoDto: UpdateTodoDto,
   ) {
     return this.todoService.updateTodo(id, updateTodoDto);
   }

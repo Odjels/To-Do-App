@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';
+import { NotFoundException } from '@nestjs/common';
 
 export interface Todo {
   id: number;
@@ -10,12 +11,42 @@ export interface Todo {
   priority?: 'low' | 'medium' | 'high';
   createdAt?: Date;
   updatedAt?: Date;
-  dueDate?: Date;
 }
 
 @Injectable()
 export class TodoService {
-  private todos: Todo[] = [];
+  private todos: Todo[] = [
+    {
+      id: 1,
+      title: 'Sample Task',
+      description: 'Sample Description',
+      completed: false,
+      priority: 'low' as const, // Use 'as const' to ensure correct typing
+
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: 2,
+      title: 'Another Task',
+      description: undefined, // Make it explicit
+      completed: true,
+      priority: 'high' as const,
+
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: 3,
+      title: 'Sample Task',
+      description: 'Sample Description',
+      completed: false,
+      priority: 'medium' as const,
+
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  ];
   private nextId = 1; // Add this counter
 
   create(createTodoDto: CreateTodoDto) {
@@ -27,7 +58,7 @@ export class TodoService {
       createdAt: new Date(),
       updatedAt: new Date(),
 
-      priority: createTodoDto.priority as 'low' | 'medium' | 'high',
+      priority: createTodoDto.priority,
     };
     this.todos.push(newTodo);
     return newTodo;
@@ -39,6 +70,9 @@ export class TodoService {
 
   findOneTodo(id: number) {
     const todo = this.todos.find((todo) => todo.id === id);
+    if (!todo) {
+      throw new NotFoundException(`Todo with ID ${id} not found`);
+    }
     return todo;
   }
 
